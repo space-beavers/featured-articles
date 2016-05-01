@@ -2,8 +2,9 @@
 
 <!-- paper elements -->
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../google-youtube/google-youtube.html">
+<link rel="import" href="../paper-card/paper-card.html">
 
 <!-- icons -->
 <link rel="import" href="../iron-icons/iron-icons.html">
@@ -11,7 +12,7 @@
 <!-- animations -->
 <link rel="import" href="../neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../neon-animation/animations/fade-out-animation.html">
-
+<script src="../time-elements/time-elements.js"></script>
 
 <!--
 Youtube button element that launches a modal playing the video
@@ -31,27 +32,31 @@ Example:
 
     </style>
 
-    <paper-button raised on-tap="_showVideo">[[label]]</paper-button>
+    <iron-ajax auto url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts?per_page=3" handle-as="json" loading="{{loading}}" last-response="{{articlesDataResponse}}"></iron-ajax>
 
-
-
-
-    <paper-dialog id="dialog"
-                  entry-animation="scale-up-animation"
-                  exit-animation="fade-out-animation"
-                  with-backdrop="true">
-      <google-youtube
-        video-id="[[videoId]]"
-        height="[[height]]px"
-        width="[[width]]px"
-        rel="0"
-        autoplay="0"
-        id="video">
-      </google-youtube>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Close<iron-icon icon="icons:close"></iron-icon></paper-button>
+    <template is="dom-if" if="{{loading}}">
+      <div class="container flex-horizontal">
+        <div class="flexchild"></div>
+        <paper-spinner active></paper-spinner>
+        <div class="flexchild"></div>
       </div>
-    </paper-dialog>
+    </template>
+
+    <div id="featuredArticlesContainer">
+      <template is="dom-if" if="{{!loading}}">
+        <div class="featured-articles-header">header</div>
+        <div class="featured-articles-items">
+          <template is="dom-repeat" items="[[articlesDataResponse]]">
+            <paper-card class="featured-article">
+              <iron-image id="memeImageCard" style="height: 300px; width: 300px; background-color: lightgray;" sizing="cover" preload fade src="[[item.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
+              <h3>[[item.title.rendered]]</h3>
+              <p>By [[item.post_author.first_name]] [[item.post_author.last_name]]</p>
+              <p>on <local-time datetime="[[item.date]]"></local-time></p>
+            </paper-card>
+          </template>
+        </div>
+      </template>
+    </div>
 
   </template>
 
@@ -90,10 +95,6 @@ Example:
         videoId: String
       },
 
-      listeners: {
-        'iron-overlay-closed': '_dialogClosed'
-      },
-
       // Element Lifecycle
 
       ready: function() {
@@ -116,14 +117,7 @@ Example:
       },
 
       // Element Behavior
-      _showVideo: function() {
-        this.$.dialog.open();
-        this.$.video.play();
-      },
 
-      _dialogClosed: function(reason) {
-        this.$.video.pause();
-      }
 
     });
   </script>
