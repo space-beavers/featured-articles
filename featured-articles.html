@@ -33,7 +33,7 @@ Example:
       }
     </style>
 
-    <iron-ajax auto url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts?per_page=3" handle-as="json" loading="{{loading}}" last-response="{{articlesDataResponse}}"></iron-ajax>
+    <iron-ajax auto id="ajax" url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts" params='{{_getParams(displayedArticleCount, searchQuery)}}' handle-as="json" loading="{{loading}}" last-response="{{articlesDataResponse}}"></iron-ajax>
 
     <template is="dom-if" if="{{loading}}">
       <div class="container flex-horizontal">
@@ -72,12 +72,41 @@ Example:
         label: {
           type: String,
           value: 'Watch'
+        },
+
+        /**
+         * The response object from the memes api
+         */
+        articlesDataResponse: {
+          type: Object
+        },
+
+        displayedArticleCount: {
+          type: String,
+          value: 3
+        },
+
+        searchQuery: {
+          type: Object,
+          value: {}
         }
       },
 
       // Element Lifecycle
-
       ready: function() {
+      },
+
+      _getParams: function(displayedArticleCount, searchQuery) {
+        var allowedSearchQueryParams = ["search", "categories", "tags"];
+        var paramsObject = {per_page: displayedArticleCount};
+
+        //Add as query parameter only allowed attributes from the searchQuery object
+        for (var searchQueryParam in searchQuery) {
+          if (allowedSearchQueryParams.indexOf(searchQueryParam) != -1) {
+            paramsObject[searchQueryParam] = searchQuery[searchQueryParam];
+          }
+        }
+        return paramsObject;
       },
 
       attached: function() {
