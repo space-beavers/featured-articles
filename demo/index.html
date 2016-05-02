@@ -7,22 +7,12 @@
     <title>featured-articles Demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="../featured-articles.html">
-    <link rel="import" href="../paper-card/paper-card.html">
-    <link rel="import" href="../paper-button/paper-button.html">
   </head>
   <body unresolved>
 
     <p>An example of <code>&lt;featured-articles&gt;</code>:</p>
 
-    <paper-card heading="Card Title">
-      <img src="http://bestbuy.i.lithium.com/t5/image/serverpage/image-id/33484i84611AD8A5237FE0/image-size/medium?v=mpbl-1&amp;px=-1">
-      <div class="card-content">Overview of New Sony W-Series HDTVs</div>
-      <div class="author">By Gadgo</div>
-      <time>on 06-17-2015</time>
-      <div class="card-actions">
-        <paper-button>Learn More</paper-button>
-      </div>
-    </paper-card>
+    <featured-articles video-id="sekLEG8xsOs" label="Watch Video!" width="1080" height="720"></featured-articles>
 
     <script>
       var seedElement = document.querySelector('featured-articles');
