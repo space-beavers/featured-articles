@@ -12,14 +12,13 @@
 <!-- animations -->
 <link rel="import" href="../neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../neon-animation/animations/fade-out-animation.html">
-<script src="../time-elements/time-elements.js"></script>
 
 <!--
 Youtube button element that launches a modal playing the video
 
 Example:
 
-    <featured-articles video-id="xxyykk"></featured-articles>
+    <featured-articles></featured-articles>
 
 @demo demo/index.html
 @hero hero.svg
@@ -28,8 +27,10 @@ Example:
 <dom-module id="featured-articles">
   <template>
     <style>
-      
-
+      paper-card {
+        padding: 0 24px 24px;
+        width: 33%;
+      }
     </style>
 
     <iron-ajax auto url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts?per_page=3" handle-as="json" loading="{{loading}}" last-response="{{articlesDataResponse}}"></iron-ajax>
@@ -44,14 +45,14 @@ Example:
 
     <div id="featuredArticlesContainer">
       <template is="dom-if" if="{{!loading}}">
-        <div class="featured-articles-header">header</div>
         <div class="featured-articles-items">
           <template is="dom-repeat" items="[[articlesDataResponse]]">
             <paper-card class="featured-article">
               <iron-image id="memeImageCard" style="height: 300px; width: 300px; background-color: lightgray;" sizing="cover" preload fade src="[[item.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
               <h3>[[item.title.rendered]]</h3>
-              <p>By [[item.post_author.first_name]] [[item.post_author.last_name]]</p>
+              <p>by [[item.post_author.first_name]] [[item.post_author.last_name]]</p>
               <p>on <local-time datetime="[[item.date]]"></local-time></p>
+              <paper-button raised>Learn More</paper-button>
             </paper-card>
           </template>
         </div>
@@ -71,28 +72,7 @@ Example:
         label: {
           type: String,
           value: 'Watch'
-        },
-
-        /**
-         * Width of the Youtube video
-         */
-        width: {
-          type: Number,
-          value: 480
-        },
-
-        /**
-         * Height of the Youtube video
-         */
-        height: {
-          type: Number,
-          value: 570
-        },
-
-        /**
-         * Youtube video id
-         */
-        videoId: String
+        }
       },
 
       // Element Lifecycle
