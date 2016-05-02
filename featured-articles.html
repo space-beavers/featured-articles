@@ -12,8 +12,9 @@
 <link rel="import" href="../iron-image/iron-image.html">
 
 <!-- animations -->
-<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
-<link rel="import" href="../neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../neon-animation/animations/slide-from-right-animation.html">
+<link rel="import" href="../neon-animation/animations/slide-left-animation.html">
+<link rel="import" href="../neon-animation/neon-animated-pages.html">
 
 <!--
 Youtube button element that launches a modal playing the video
@@ -49,8 +50,16 @@ Example:
         padding: 24px;
       }
 
+      #featuredArticlesContainer {
+        overflow: hidden;
+      }
+
       .featured-articles-header {
         background: #003b64;
+        z-index: 10;
+      }
+      .featured-articles-items {
+        z-index: 1;
       }
       .featured-articles .featured-articles-header {
         padding: 256px 24px 24px;
@@ -79,7 +88,7 @@ Example:
       }
     </style>
 
-    <iron-ajax auto id="ajax" url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts" params='{{params}}' handle-as="json" loading="{{loading}}" last-response="{{articlesDataResponse}}"></iron-ajax>
+    <iron-ajax auto id="ajax" url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts" params='{{params}}' handle-as="json" loading="{{loading}}" on-response="addArticlesPage" last-response="{{articlesDataResponse}}"></iron-ajax>
 
     <template is="dom-if" if="{{loading}}">
       <div class="container flex-horizontal">
@@ -96,21 +105,26 @@ Example:
         </div>
       </a>
       <div class="featured-articles-items flex-9 layout horizontal">
-        <template is="dom-repeat" if="{{!loading}}" items="[[articlesDataResponse]]">
-          <a href="{{item.link}}" class="flex self-stretch layout horizontal">
-            <paper-card class="flex self-stretch featured-article background-white">
-              <iron-image class="featured-article-image" sizing="cover" preload fade src="[[item.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
-              <h3 data-equalizer="featured-article-heading" class="featured-article-heading open-sans-semi-bold black">[[item.title.rendered]]</h3>
-              <p class="featured-article-author black font-xxs">by [[item.post_author.first_name]] [[item.post_author.last_name]]<br>
-              on <time>{{getFormattedDate(item.date)}}</p>
-              <span class="featured-article-button button-outline button-blue">Learn More</span>
-            </paper-card>
-          </a>
-        </template>
+        <neon-animated-pages id="pages" class="flex-12" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" selected="[[articlesPageIndex]]" class="layout horizontal">
+          <template is="dom-repeat" items="[[articlesPages]]" as="page">
+          <div class="articles-page flex layout horizontal">
+            <template is="dom-repeat" items="[[page]]" as="article">
+              <a href="{{article.link}}" class="flex self-stretch layout horizontal">
+                <paper-card class="flex self-stretch featured-article">
+                  <iron-image class="featured-article-image" sizing="cover" preload fade src="[[article.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
+                  <h3 data-equalizer="featured-article-heading" class="featured-article-heading open-sans-semi-bold black">[[article.title.rendered]]</h3>
+                  <p class="featured-article-author black font-xxs">by [[article.post_author.first_name]] [[article.post_author.last_name]]<br>
+                  on <time>{{getFormattedDate(article.date)}}</time></p>
+                  <span class="featured-article-button button-outline button-blue">Learn More</span>
+                </paper-card>
+              </a>
+            </template>
+            </div>
+          </template>
+        </neon-animated-pages>
       </div>
     </div>
-    <paper-button on-tap="nextPage">More</paper-button>
-
+    <paper-button on-tap="nextPage">More articles</paper-button>
   </template>
 
   <script>
@@ -122,8 +136,14 @@ Example:
           type: Object,
           value: {}
         },
+
         articlesDataResponse: {
           type: Object
+        },
+
+        articlesPages: {
+          type: Array,
+          value: []
         },
 
         displayedArticleCount: {
@@ -136,7 +156,12 @@ Example:
           value: {}
         },
 
-        pageIndex: {
+        articlesPageIndex: {
+          type: Number,
+          value: -1
+        },
+
+        wpPageIndex: {
           type: Number,
           value: 1,
           observer: "_setParams"
@@ -145,14 +170,22 @@ Example:
 
       // Element Lifecycle
       ready: function() {
-        _setParams();
+      },
+
+      addArticlesPage: function () {
+        this.push('articlesPages',this.articlesDataResponse);
+        this.articlesPageIndex += 1;
+      },
+
+      attached: function() {
+
       },
 
       _setParams: function() {
         var allowedSearchQueryParams = ["search", "categories", "tags"];
         var paramsObject = {
           per_page: this.displayedArticleCount,
-          page: this.pageIndex
+          page: this.wpPageIndex
         };
 
         //Add as query parameter only allowed attributes from the searchQuery object
@@ -165,7 +198,7 @@ Example:
       },
 
       nextPage: function () {
-        this.pageIndex += 1;
+        this.wpPageIndex += 1;
       },
 
       getFormattedDate: function (timeString) {
