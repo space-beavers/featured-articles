@@ -12,7 +12,6 @@
 <!-- animations -->
 <link rel="import" href="../neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../neon-animation/animations/fade-out-animation.html">
-<script src="../time-elements/time-elements.js"></script>
 
 <!--
 Youtube button element that launches a modal playing the video
@@ -51,7 +50,7 @@ Example:
               <iron-image id="memeImageCard" style="height: 300px; width: 300px; background-color: lightgray;" sizing="cover" preload fade src="[[item.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
               <h3>[[item.title.rendered]]</h3>
               <p>By [[item.post_author.first_name]] [[item.post_author.last_name]]</p>
-              <p>on <local-time datetime="[[item.date]]"></local-time></p>
+              <p>on <time>{{getFormattedDate(item.date)}}</time></p>
             </paper-card>
           </template>
         </div>
@@ -116,9 +115,10 @@ Example:
         // Use this to clean up anything you did in `attached`.
       },
 
-      // Element Behavior
-
-
+      getFormattedDate: function (timeString) {
+        var date = new Date(timeString);
+        return date.getMonth()+1 + "-" + date.getDate() + "-" + date.getFullYear();
+      }
     });
   </script>
 </dom-module>
