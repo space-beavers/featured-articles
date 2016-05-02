@@ -5,9 +5,11 @@
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 
 <!-- icons -->
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-image/iron-image.html">
 
 <!-- animations -->
 <link rel="import" href="../neon-animation/animations/scale-up-animation.html">
@@ -26,14 +28,58 @@ Example:
 
 <dom-module id="featured-articles">
   <template>
+    <style include="iron-flex iron-flex-factors iron-flex-alignment"></style>
     <style>
-      paper-card {
-        padding: 0 24px 24px;
-        width: 33%;
+      :host {
+        display: block;
+        box-sizing: border-box;
+        font-family: "Roboto";
+      }
+
+      :host a {
+        color:inherit;
+        text-decoration: none;
+      }
+
+      :host * {
+        box-sizing: border-box;
+      }
+
+      .featured-article {
+        padding: 24px;
+      }
+
+      .featured-articles-header {
+        background: #003b64;
+      }
+      .featured-articles .featured-articles-header {
+        padding: 256px 24px 24px;
+        position: relative;
+      }
+      .featured-articles .featured-articles-header-title {
+        color: #fff200;
+        margin-bottom: 24px;
+      }
+      .featured-articles .featured-articles-header-description {
+        margin-bottom: 40px;
+      }
+      .core-utilities .bby-style-wrapper .loose {
+        line-height: 180%;
+      }
+      .featured-articles .featured-articles-header-link {
+        bottom: 24px;
+        position: absolute;
+      }
+      .core-utilities .bby-style-wrapper .colour-yellow {
+        color: #fff200;
+      }
+      .featured-article-image {
+        height: 200px;
+        width: 100%;
       }
     </style>
 
-    <iron-ajax auto id="ajax" url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts" params='{{_getParams(displayedArticleCount, searchQuery)}}' handle-as="json" loading="{{loading}}" last-response="{{articlesDataResponse}}"></iron-ajax>
+    <iron-ajax auto id="ajax" url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts" params='{{params}}' handle-as="json" loading="{{loading}}" last-response="{{articlesDataResponse}}"></iron-ajax>
 
     <template is="dom-if" if="{{loading}}">
       <div class="container flex-horizontal">
@@ -43,21 +89,27 @@ Example:
       </div>
     </template>
 
-    <div id="featuredArticlesContainer">
-      <template is="dom-if" if="{{!loading}}">
-        <div class="featured-articles-items">
-          <template is="dom-repeat" items="[[articlesDataResponse]]">
-            <paper-card class="featured-article">
-              <iron-image id="memeImageCard" style="height: 300px; width: 300px; background-color: lightgray;" sizing="cover" preload fade src="[[item.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
-              <h3>[[item.title.rendered]]</h3>
-              <p>by [[item.post_author.first_name]] [[item.post_author.last_name]]</p>
-              <p>on <time>{{getFormattedDate(item.date)}}</time></p>
-              <paper-button raised>Learn More</paper-button>
-            </paper-card>
-          </template>
+    <div id="featuredArticlesContainer" class="layout horizontal">
+      <a href="#" aria-label="Read our blogs" class="featured-articles-header flex-3" data-equalizer-watch="blog-posts" style="height: 456px;">
+        <div class="featured-articles-header-title">
+          Featured article from the blog
         </div>
-      </template>
+      </a>
+      <div class="featured-articles-items flex-9 layout horizontal">
+        <template is="dom-repeat" if="{{!loading}}" items="[[articlesDataResponse]]">
+          <a href="{{item.link}}" class="flex self-stretch layout horizontal">
+            <paper-card class="flex self-stretch featured-article background-white">
+              <iron-image class="featured-article-image" sizing="cover" preload fade src="[[item.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
+              <h3 data-equalizer="featured-article-heading" class="featured-article-heading open-sans-semi-bold black">[[item.title.rendered]]</h3>
+              <p class="featured-article-author black font-xxs">by [[item.post_author.first_name]] [[item.post_author.last_name]]<br>
+              on <time>{{getFormattedDate(item.date)}}</p>
+              <span class="featured-article-button button-outline button-blue">Learn More</span>
+            </paper-card>
+          </a>
+        </template>
+      </div>
     </div>
+    <paper-button on-tap="nextPage">More</paper-button>
 
   </template>
 
@@ -66,17 +118,10 @@ Example:
       is: 'featured-articles',
 
       properties: {
-        /**
-         * Button Label
-         */
-        label: {
-          type: String,
-          value: 'Watch'
+        params: {
+          type: Object,
+          value: {}
         },
-
-        /**
-         * The response object from the memes api
-         */
         articlesDataResponse: {
           type: Object
         },
@@ -89,40 +134,38 @@ Example:
         searchQuery: {
           type: Object,
           value: {}
+        },
+
+        pageIndex: {
+          type: Number,
+          value: 1,
+          observer: "_setParams"
         }
       },
 
       // Element Lifecycle
       ready: function() {
+        _setParams();
       },
 
-      _getParams: function(displayedArticleCount, searchQuery) {
+      _setParams: function() {
         var allowedSearchQueryParams = ["search", "categories", "tags"];
-        var paramsObject = {per_page: displayedArticleCount};
+        var paramsObject = {
+          per_page: this.displayedArticleCount,
+          page: this.pageIndex
+        };
 
         //Add as query parameter only allowed attributes from the searchQuery object
-        for (var searchQueryParam in searchQuery) {
+        for (var searchQueryParam in this.searchQuery) {
           if (allowedSearchQueryParams.indexOf(searchQueryParam) != -1) {
-            paramsObject[searchQueryParam] = searchQuery[searchQueryParam];
+            paramsObject[searchQueryParam] = this.searchQuery[searchQueryParam];
           }
         }
-        return paramsObject;
+        this.params = paramsObject;
       },
 
-      attached: function() {
-        // `attached` fires once the element and its parents have been inserted
-        // into a document.
-        //
-        // This is a good place to perform any work related to your element's
-        // visual state or active behavior (measuring sizes, beginning animations,
-        // loading resources, etc).
-      },
-
-      detached: function() {
-        // The analog to `attached`, `detached` fires when the element has been
-        // removed from a document.
-        //
-        // Use this to clean up anything you did in `attached`.
+      nextPage: function () {
+        this.pageIndex += 1;
       },
 
       getFormattedDate: function (timeString) {
