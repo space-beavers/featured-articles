@@ -3,26 +3,20 @@
 <!-- paper elements -->
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 
-<!-- icons -->
-<link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../iron-image/iron-image.html">
-
 <!-- animations -->
+<link rel="import" href="../neon-animation/neon-animated-pages.html">
 <link rel="import" href="../neon-animation/animations/slide-from-right-animation.html">
 <link rel="import" href="../neon-animation/animations/slide-left-animation.html">
-<link rel="import" href="../neon-animation/neon-animated-pages.html">
+
+<link rel="import" href="./featured-article.html">
 
 <!--
-Youtube button element that launches a modal playing the video
+Featured articles element allows the display of wordpress blogs using the latest WP Rest API v2
 
 Example:
-
     <featured-articles></featured-articles>
-
 @demo demo/index.html
 @hero hero.svg
 -->
@@ -30,6 +24,7 @@ Example:
 <dom-module id="featured-articles">
   <template>
     <style include="iron-flex iron-flex-factors iron-flex-alignment"></style>
+
     <style>
       :host {
         display: block;
@@ -46,79 +41,57 @@ Example:
         box-sizing: border-box;
       }
 
-      .featured-article {
-        padding: 24px;
-      }
-
-      #featuredArticlesContainer {
-        overflow: hidden;
+      #featured-articles-container {
+        @apply(--layout-horizontal);
+        height: 456px;
       }
 
       .featured-articles-header {
+        @apply(--layout-horizontal);
+        @apply(--layout-flex-3);
         background: #003b64;
         z-index: 10;
       }
       .featured-articles-items {
+        @apply(--layout-horizontal);
+        @apply(--layout-flex-9);
         z-index: 1;
       }
+
+      neon-animated-pages {
+        @apply(--layout-horizontal);
+        @apply(--layout-flex-12);
+      }
+
       .featured-articles .featured-articles-header {
         padding: 256px 24px 24px;
         position: relative;
-      }
-      .featured-articles .featured-articles-header-title {
         color: #fff200;
-        margin-bottom: 24px;
       }
+
+      .article-set {
+        @apply(--layout-horizontal);
+        @apply(--layout-flex);
+      }
+
       .featured-articles .featured-articles-header-description {
         margin-bottom: 40px;
-      }
-      .core-utilities .bby-style-wrapper .loose {
-        line-height: 180%;
-      }
-      .featured-articles .featured-articles-header-link {
-        bottom: 24px;
-        position: absolute;
-      }
-      .core-utilities .bby-style-wrapper .colour-yellow {
-        color: #fff200;
-      }
-      .featured-article-image {
-        height: 200px;
-        width: 100%;
       }
     </style>
 
     <iron-ajax auto id="ajax" url="http://test-plug-in-blog.pantheonsite.io/plugin-blog/wp-json/wp/v2/posts" params='{{params}}' handle-as="json" loading="{{loading}}" on-response="addArticlesPage" last-response="{{articlesDataResponse}}"></iron-ajax>
 
-    <template is="dom-if" if="{{loading}}">
-      <div class="container flex-horizontal">
-        <div class="flexchild"></div>
-        <paper-spinner active></paper-spinner>
-        <div class="flexchild"></div>
-      </div>
-    </template>
-
-    <div id="featuredArticlesContainer" class="layout horizontal">
-      <a href="#" aria-label="Read our blogs" class="featured-articles-header flex-3" data-equalizer-watch="blog-posts" style="height: 456px;">
-        <div class="featured-articles-header-title">
-          Featured article from the blog
-        </div>
+    <div id="featured-articles-container">
+      <a href="#" aria-label="Read our blogs" class="featured-articles-header">
+        Featured article from the blog
       </a>
-      <div class="featured-articles-items flex-9 layout horizontal">
-        <neon-animated-pages id="pages" class="flex-12" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" selected="[[articlesPageIndex]]" class="layout horizontal">
+      <div class="featured-articles-items">
+        <neon-animated-pages id="pages" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" selected="[[articlesPageIndex]]">
           <template is="dom-repeat" items="[[articlesPages]]" as="page">
-          <div class="articles-page flex layout horizontal">
-            <template is="dom-repeat" items="[[page]]" as="article">
-              <a href="{{article.link}}" class="flex self-stretch layout horizontal">
-                <paper-card class="flex self-stretch featured-article">
-                  <iron-image class="featured-article-image" sizing="cover" preload fade src="[[article.better_featured_image.media_details.sizes.medium.source_url]]"></iron-image>
-                  <h3 data-equalizer="featured-article-heading" class="featured-article-heading open-sans-semi-bold black">[[article.title.rendered]]</h3>
-                  <p class="featured-article-author black font-xxs">by [[article.post_author.first_name]] [[article.post_author.last_name]]<br>
-                  on <time>{{getFormattedDate(article.date)}}</time></p>
-                  <span class="featured-article-button button-outline button-blue">Learn More</span>
-                </paper-card>
-              </a>
-            </template>
+            <div class="article-set">
+              <template is="dom-repeat" items="[[page]]" as="article">
+                <featured-article href="[[article.link]]" title="[[article.title.rendered]]" author-name="[[article.post_author.first_name]] [[article.post_author.last_name]]" date="[[article.date]]" img-src="[[article.better_featured_image.media_details.sizes.medium.source_url]]"></featured-article>
+              </template>
             </div>
           </template>
         </neon-animated-pages>
