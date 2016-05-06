@@ -1,0 +1,59 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+
+<dom-module id="featured-article">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host,
+      :host>a {
+        display: inline-block;
+        box-sizing: border-box;
+        @apply(--layout-horizontal);
+        @apply(--layout-flex);
+        @apply(--layout-self-stretch);
+      }
+
+      paper-card {
+        padding: 24px;
+      }
+
+      iron-image {
+        height: 200px;
+        width: 100%;
+      }
+    </style>
+
+    <a href="[[href]]">
+      <paper-card>
+        <iron-image sizing="cover" src="[[imgSrc]]"></iron-image>
+        <h3>[[title]]</h3>
+        <p>by [[authorName]]<br>
+        on <time>{{getFormattedDate(date)}}</time></p>
+        <span>Learn More</span>
+      </paper-card>
+    </a>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'featured-article',
+
+      properties: {
+        title: String,
+        authorName: String,
+        date: String,
+        imgSrc: String,
+        href: String
+      },
+
+      getFormattedDate: function (timeString) {
+        var date = new Date(timeString);
+        return date.getMonth()+1 + "-" + date.getDate() + "-" + date.getFullYear();
+      }
+    });
+  </script>
+</dom-module>
